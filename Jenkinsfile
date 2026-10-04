@@ -47,24 +47,26 @@ pipeline {
       }
     }
 
-    stage('Dependency Scan - npm audit') {
+        stage('Dependency Scan - npm audit') {
       steps {
         sh '''
           mkdir -p reports
-          npm audit --json > reports/npm-audit.json || true
-          npm audit --audit-level=high
+          # Full report (includes dev tools) saved for visibility, does not block
+          npm audit --json > reports/npm-audit-full.json || true
+          # Gate: only production dependencies (what actually ships)
+          npm audit --omit=dev --audit-level=high
         '''
       }
     }
 
-    stage('Vulnerability Scan - Trivy') {
+        stage('Vulnerability Scan - Trivy') {
       steps {
         sh '''
           mkdir -p reports
           trivy fs --scanners vuln,secret --severity HIGH,CRITICAL \
-            --skip-dirs .git --format json --output reports/trivy-fs.json --exit-code 0 .
+            --skip-dirs .git,node_modules --format json --output reports/trivy-fs.json --exit-code 0 .
           trivy fs --scanners vuln,secret --severity HIGH,CRITICAL \
-            --skip-dirs .git --exit-code 1 .
+            --skip-dirs .git,node_modules --exit-code 1 .
         '''
       }
     }

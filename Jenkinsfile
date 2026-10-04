@@ -83,14 +83,13 @@ pipeline {
       }
     }
 
-    stage('Launch Apache EC2') {
+        stage('Launch Apache EC2') {
       steps {
         sh '''
           aws ec2 run-instances \
             --launch-template LaunchTemplateId=${LAUNCH_TEMPLATE_ID} \
             --count 1 \
-            --tag-specifications \
-            ResourceType=instance,Tags=[{Key=Name,Value=Apache-Deploy-${BUILD_NUMBER}}]
+            --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=Apache-Deploy-${BUILD_NUMBER}}]"
         '''
       }
     }
